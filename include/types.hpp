@@ -19,10 +19,11 @@ struct CameraCalibration {
   bool valid() const { return !matrix.empty(); }
 };
 
-struct SensorData {
+struct SensorData
+{
   cv::Mat image;  // CV_8UC3，BGR，独立拥有像素内存
   TimePoint timestamp{};
-  Eigen::Quaterniond imu_q = Eigen::Quaterniond::Identity();
+  Eigen::Quaterniond imu_q = Eigen::Quaterniond::Identity();// IMU 稳定系中相对云台原点的姿态
   double bullet_speed = 0;  // m/s
 };
 
