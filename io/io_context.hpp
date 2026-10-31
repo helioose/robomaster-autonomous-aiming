@@ -2,6 +2,8 @@
 #include "config.hpp"
 #include "types.hpp"
 #include <optional>
+#include <cstdint>
+#include <deque>
 #include<rclcpp/rclcpp.hpp>
 #include<sensor_msgs/msg/image.hpp>
 #include<hnurm_interfaces/msg/vision_recv_data.hpp>
@@ -18,6 +20,9 @@ struct IoContext
   rclcpp::Publisher<hnurm_interfaces::msg::VisionSendData>::SharedPtr  command_pub;
   sensor_msgs::msg::Image::SharedPtr image_latest;
   hnurm_interfaces::msg::VisionRecvData::SharedPtr feedback_latest;
+  // 保存最近收到的姿态反馈，用图像时间戳寻找最接近的一帧姿态。
+  std::deque<hnurm_interfaces::msg::VisionRecvData::SharedPtr> feedback_history;
+  std::optional<std::int64_t> last_img_ns;
 
   void open();
   std::optional<SensorData> read();
