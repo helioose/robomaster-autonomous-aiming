@@ -6,4 +6,5 @@ source /opt/ros/humble/setup.bash
 source "$SIM_ROOT/install_interfaces/setup.bash"
 export ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-89}
 cd "$REPO_ROOT"
-exec ./build/training configs/simulation.yaml
+# 可传配置路径，例如：./scripts/run_training.sh configs/lesson04_static.yaml
+exec ./build/training "${1:-configs/simulation.yaml}"

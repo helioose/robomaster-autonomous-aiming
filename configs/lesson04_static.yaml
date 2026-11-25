@@ -1,0 +1,20 @@
+# 第四讲验收视频：静止靶场景
+# PnP 解算位姿 vs 仿真真值，误差实时显示。
+display: true
+allow_fire: false
+
+camera_matrix: [1303.6753236814714, 0.0, 720.0,
+                0.0, 1303.6753236814714, 540.0,
+                0.0, 0.0, 1.0]
+distort_coeffs: [0.0, 0.0, 0.0, 0.0, 0.0]
+
+R_camera2gimbal: [0.0, 0.4226182617, 0.9063077870,
+                  -1.0, 0.0, 0.0,
+                  0.0, -0.9063077870, 0.4226182617]
+t_camera2gimbal: [0.0, 0.0, 0.0]
+
+demo: true
+demo_pnp_source: detection
+prediction_ms: 250
+record: true
+record_path: /home/huo/截图/lesson04_static_pnp_vs_truth.mp4

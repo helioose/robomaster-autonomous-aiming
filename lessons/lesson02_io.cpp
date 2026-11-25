@@ -5,6 +5,7 @@
 #include <limits>
 #include <opencv2/opencv.hpp>
 #include <Eigen/Geometry>
+#include <builtin_interfaces/msg/time.hpp>
 
 namespace training::io
 {
@@ -12,6 +13,14 @@ namespace training::io
   {
     // 35 Hz 下 128 条约可覆盖 3.6 秒的反馈历史，足以容纳图像与反馈的短时错位。
     constexpr std::size_t kFeedbackHistoryLimit = 128;
+    // 真值按渲染帧发布，240 条足够覆盖图像与真值的短时错位。
+    constexpr std::size_t kTruthHistoryLimit = 240;
+
+    std::int64_t stampToNs(const builtin_interfaces::msg::Time &stamp)
+    {
+      return static_cast<std::int64_t>(stamp.sec) * 1'000'000'000LL +
+             static_cast<std::int64_t>(stamp.nanosec);
+    }
   }
 
   void IoContext::open()
@@ -42,6 +51,18 @@ namespace training::io
           while (feedback_history.size() > kFeedbackHistoryLimit)
           {
             feedback_history.pop_front();
+          }
+        });
+    truth_history.clear();
+    truth_sub = node->create_subscription<hnurm_interfaces::msg::LessonTruth>(
+        "/lesson/armor_truth",
+        rclcpp::SensorDataQoS(),
+        [this](hnurm_interfaces::msg::LessonTruth::SharedPtr msg)
+        {
+          truth_history.push_back(msg);
+          while (truth_history.size() > kTruthHistoryLimit)
+          {
+            truth_history.pop_front();
           }
         });
     command_pub = node->create_publisher<hnurm_interfaces::msg::VisionSendData>(
@@ -139,6 +160,48 @@ namespace training::io
     data.timestamp =
         steady_now +
         std::chrono::duration_cast<Clock::duration>(image_offset_from_now);
+    data.ros_stamp_ns = stamp_ns;
+
+    // 真值与图像使用同一个 ROS 系统时钟，按 header.stamp 寻找最近的同一帧。
+    const hnurm_interfaces::msg::LessonTruth::SharedPtr *matched_truth = nullptr;
+    std::int64_t min_truth_offset_ns = std::numeric_limits<std::int64_t>::max();
+    for (const auto &truth : truth_history)
+    {
+      if (!truth)
+        continue;
+      const auto &truth_stamp = truth->header.stamp;
+      if (truth_stamp.sec < 0 || truth_stamp.nanosec >= 1'000'000'000u)
+        continue;
+      const std::int64_t offset_ns = stampToNs(truth_stamp) - stamp_ns;
+      const std::int64_t abs_offset_ns = offset_ns >= 0 ? offset_ns : -offset_ns;
+      if (abs_offset_ns < min_truth_offset_ns)
+      {
+        min_truth_offset_ns = abs_offset_ns;
+        matched_truth = &truth;
+      }
+    }
+    // 超过 200 ms 说明仿真器没有发真值（例如没开训练场景），不强行配对。
+    if (matched_truth && min_truth_offset_ns <= 200'000'000LL)
+    {
+      for (const auto &armor : (*matched_truth)->armors)
+      {
+        TruthArmor truth_armor;
+        truth_armor.id = armor.id;
+        truth_armor.large_armor = armor.large_armor;
+        for (std::size_t i = 0; i < 4; ++i)
+        {
+          truth_armor.corners[i] = cv::Point2f(
+              static_cast<float>(armor.corners_px[i].x),
+              static_cast<float>(armor.corners_px[i].y));
+          truth_armor.corners_cam[i] =
+              Eigen::Vector3d(armor.corners_m[i].x, armor.corners_m[i].y,
+                              armor.corners_m[i].z);
+        }
+        truth_armor.position_cam = Eigen::Vector3d(
+            armor.position.x, armor.position.y, armor.position.z);
+        data.truth.push_back(truth_armor);
+      }
+    }
 
     // 使用与图像时间戳最近的反馈，而不是无条件使用最新收到的反馈。
     data.bullet_speed = matched_feedback->bullet_speed.data;

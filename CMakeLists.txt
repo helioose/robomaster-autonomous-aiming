@@ -6,7 +6,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(hnurm_interfaces REQUIRED)
-find_package(OpenCV REQUIRED COMPONENTS core imgproc highgui calib3d)
+find_package(OpenCV REQUIRED COMPONENTS core imgproc highgui calib3d videoio)
 find_package(Eigen3 REQUIRED)
 find_package(yaml-cpp REQUIRED)
 add_library(training_io io/config.cpp)
@@ -16,6 +16,7 @@ ament_target_dependencies(training_io rclcpp sensor_msgs hnurm_interfaces)
 target_compile_options(training_io PRIVATE -Wall -Wextra -Wpedantic)
 add_library(training_lessons lessons/lesson02_io.cpp
  lessons/lesson03_detection.cpp lessons/lesson04_tracking.cpp
+ lessons/lesson04_demo.cpp
  lessons/lesson05_aiming.cpp)
 target_link_libraries(training_lessons PUBLIC training_io)
 add_executable(training src/main.cpp)

@@ -6,7 +6,7 @@ use futures::SinkExt;
 use futures::channel::mpsc;
 use futures::channel::mpsc::{Sender, TryRecvError};
 use r2r::geometry_msgs::msg::PoseStamped;
-use r2r::hnurm_interfaces::msg::{VisionRecvData, VisionSendData};
+use r2r::hnurm_interfaces::msg::{LessonTruth, VisionRecvData, VisionSendData};
 use r2r::sensor_msgs::msg::{CameraInfo, CompressedImage, Image, PointCloud2};
 use r2r::std_msgs::msg::String as RosString;
 use r2r::tf2_msgs::msg::TFMessage;
@@ -158,6 +158,7 @@ topic!(
         "/simulator/power_rune/hit" as RosString as PowerRuneHitTopic;
         "/simulator/power_rune/state" as RosString as PowerRuneStateTopic;
         "/vision_receive_data" as VisionRecvData as VisionRecvDataTopic with QosProfile::sensor_data();
+        "/lesson/armor_truth" as LessonTruth as LessonTruthTopic with QosProfile::sensor_data();
     }
     sub {
         "/vision_send_data" as VisionSendData as VisionSendDataTopic with QosProfile::sensor_data();

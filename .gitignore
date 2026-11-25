@@ -5,11 +5,6 @@
 .vscode/
 .idea/
 
-# Local AI-agent workspaces and session records
-/.claude/
-/.agents/
-/.codex/
-
 # ROS2 interface workspace
 /simulation/build_interfaces/
 /simulation/install_interfaces/

@@ -28,6 +28,15 @@ Config load_config(const std::string& path) {
   read_array(y, "distort_coeffs", c.distort_coeffs);
   read_array(y, "R_camera2gimbal", c.camera_to_gimbal);
   read_array(y, "t_camera2gimbal", c.camera_to_gimbal_translation);
+  if (y["demo"]) c.demo = y["demo"].as<bool>();
+  if (y["demo_pnp_source"]) c.demo_pnp_source = y["demo_pnp_source"].as<std::string>();
+  if (c.demo_pnp_source != "detection" && c.demo_pnp_source != "truth")
+    throw std::runtime_error("demo_pnp_source 只能是 detection 或 truth");
+  if (y["prediction_ms"]) c.prediction_ms = y["prediction_ms"].as<double>();
+  if (!std::isfinite(c.prediction_ms) || c.prediction_ms <= 0.0)
+    throw std::runtime_error("prediction_ms 必须是有限正数");
+  if (y["record"]) c.record = y["record"].as<bool>();
+  if (y["record_path"]) c.record_path = y["record_path"].as<std::string>();
   if (c.camera_matrix[0] <= 0 || c.camera_matrix[4] <= 0 ||
       std::abs(c.camera_matrix[8] - 1.0) > 1e-9)
     throw std::runtime_error("无效的仿真 IO 配置");

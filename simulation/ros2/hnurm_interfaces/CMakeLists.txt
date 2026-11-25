@@ -9,7 +9,7 @@ endif()
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
-file(GLOB msg_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} msg/*/*.msg)
+file(GLOB_RECURSE msg_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} CONFIGURE_DEPENDS msg/*.msg)
 file(GLOB srv_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} srv/*.srv)
 rosidl_generate_interfaces(
         ${PROJECT_NAME}

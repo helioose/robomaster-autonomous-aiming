@@ -4,6 +4,7 @@ mod capture;
 mod components;
 mod config;
 mod training;
+mod lesson_truth;
 mod score_model;
 mod scoreboard;
 mod ballistics;
@@ -308,6 +309,7 @@ fn main() {
     #[cfg(feature = "ros2")]
     {
         app.add_plugins(ROS2Plugin::default());
+        app.add_plugins(lesson_truth::LessonTruthPlugin);
         info!("ROS2 integration enabled");
     }
     #[cfg(not(feature = "ros2"))]
